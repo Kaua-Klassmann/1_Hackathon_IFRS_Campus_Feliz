@@ -1,4 +1,4 @@
-import TipoEventoCritico from "../models/TipoEventoCritico";
+import TipoEventoCritico from "../models/TipoEventoCritico.js";
 
 class TipoEventoCriticoController {
   async index(req, res) {

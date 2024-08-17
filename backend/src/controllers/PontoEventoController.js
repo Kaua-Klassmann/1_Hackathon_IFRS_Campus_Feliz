@@ -1,5 +1,7 @@
 import Yup from "yup";
 
+import PontoEvento from "../models/PontoEvento.js";
+
 class PontoEventoController {
   async store(req, res) {
     const schema = Yup.object().shape({
