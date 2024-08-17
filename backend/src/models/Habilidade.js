@@ -25,6 +25,9 @@ class Habilidade extends Model {
 
   static associate(models) {
     this.hasMany(models.Usuario_Habilidade, { foreignKey: "idHabilidade" });
+    this.hasMany(models.PontoEvento_Habilidade, {
+      foreignKey: "idHabilidade",
+    });
   }
 }
 

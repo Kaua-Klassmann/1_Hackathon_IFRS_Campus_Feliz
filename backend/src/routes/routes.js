@@ -4,7 +4,6 @@ import authMiddleware from "../middlewares/auth.js";
 
 import UserController from "../controllers/UsuarioController.js";
 import HabilidadeController from "../controllers/HabilidadeController.js";
-import TipoEventoCriticoController from "../controllers/TipoEventoCriticoController.js";
 import EventoCriticoController from "../controllers/EventoCriticoController.js";
 import PontoEventoController from "../controllers/PontoEventoController.js";
 
@@ -20,7 +19,6 @@ routes.use(authMiddleware);
 
 routes.get("/pointsEvents", PontoEventoController.index);
 routes.post("/pointEvent", PontoEventoController.store);
-routes.get("/criticEventType", TipoEventoCriticoController.index);
 routes.get("/criticsEvents/:uf", EventoCriticoController.index);
 routes.post("/criticEvent", EventoCriticoController.store);
 

@@ -115,7 +115,7 @@ class UsuarioController {
     }
 
     return res.json({
-      token: jwt.sign({}, authConfig.secret, {
+      token: jwt.sign({ id }, authConfig.secret, {
         expiresIn: authConfig.expiresIn,
       }),
     });
