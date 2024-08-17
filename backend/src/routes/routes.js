@@ -7,7 +7,7 @@ import HabilidadeController from "../controllers/HabilidadeController.js";
 import EventoCriticoController from "../controllers/EventoCriticoController.js";
 import TipoEventoCriticoController from "../controllers/TipoEventoCriticoController.js";
 import PontoEventoController from "../controllers/PontoEventoController.js";
-import PontoEvento_HabilidadeController from "../controllers/PontoEvento_Habilidade.js";
+import PontoEvento_HabilidadeController from "../controllers/PontoEvento_HabilidadeController.js";
 
 const routes = new Router();
 
