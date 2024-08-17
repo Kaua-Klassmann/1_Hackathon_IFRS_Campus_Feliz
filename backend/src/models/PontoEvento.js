@@ -37,6 +37,10 @@ class PontoEvento extends Model {
     this.belongsTo(models.EventoCritico, {
       foreignKey: "idEventoCritico",
     });
+
+    this.hasMany(models.PontoEvento_Habilidade, {
+      foreignKey: "idPontoEvento",
+    });
   }
 }
 

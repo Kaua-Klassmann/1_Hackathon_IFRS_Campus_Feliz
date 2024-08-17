@@ -8,6 +8,7 @@ import EventoCritico from "../models/EventoCritico.js";
 import TipoEventoCritico from "../models/TipoEventoCritico.js";
 import PontoEvento from "../models/PontoEvento.js";
 import TipoPontoEvento from "../models/TipoPontoEvento.js";
+import PontoEvento_Habilidade from "../models/PontoEvento_Habilidade.js";
 
 import databaseConfig from "../config/database.js";
 
@@ -20,6 +21,7 @@ const models = [
   TipoEventoCritico,
   PontoEvento,
   TipoPontoEvento,
+  PontoEvento_Habilidade,
 ];
 
 class Database {

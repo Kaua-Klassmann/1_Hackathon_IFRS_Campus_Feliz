@@ -83,7 +83,7 @@ class EventoCriticoController {
       where: {
         estado: req.params.uf,
       },
-      attributes: ["nome", "latitude", "longitude"],
+      attributes: ["nome", "latitude", "longitude", "id"],
       include: [
         {
           model: TipoEventoCritico,
