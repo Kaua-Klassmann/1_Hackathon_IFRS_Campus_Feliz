@@ -13,32 +13,43 @@ import * as olProj from 'ol/proj'
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-export default function MapItem({id, map, coordinates, title, type}
+export default function MapItem({id, map, coordinates, title, type, multiplier}
   : 
-  {id: number, map: Map, coordinates: number[], title: string, type: string}) {
+  {id: number, map: Map, coordinates: number[], title: string, type: string, multiplier?: number}) {
     const router = useRouter()
+
     useEffect(() => {
       const shelterPoint = new Style({
         image: new Icon({
             scale: 0.1,
-            anchor: [0.1, 0.1], // Anchor point for the icon (offset from center)
-            src: "https://cdn-icons-png.flaticon.com/128/14035/14035769.png" // Path to your custom marker image (optional)
+            anchor: [0.1, 0.1],
+            src: "https://cdn-icons-png.flaticon.com/128/14035/14035769.png"
         })
       });
 
       const collectPoint = new Style({
         image: new Icon({
             scale: 0.1,
-            anchor: [0.1, 0.1], // Anchor point for the icon (offset from center)
-            src: 'https://cdn-icons-png.flaticon.com/128/6162/6162025.png' // Path to your custom marker image (optional)
+            anchor: [0.1, 0.1],
+            src: 'https://cdn-icons-png.flaticon.com/128/6162/6162025.png'
         })
       });
 
       const controlPoint = new Style({
         image: new Icon({
             scale: 0.1,
-            anchor: [0.1, 0.1], // Anchor point for the icon (offset from center)
-            src: 'https://cdn-icons-png.flaticon.com/128/16396/16396073.png' // Path to your custom marker image (optional)
+            anchor: [0.1, 0.1],
+            src: 'https://cdn-icons-png.flaticon.com/128/16396/16396073.png'
+        })
+      });
+
+      const criticalPoint = new Style({
+        image: new Icon({
+            scale: multiplier ? multiplier*0.1 : 0.1,
+            anchor: [0.5, 0.5],
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
+            src: 'https://cdn-icons-png.flaticon.com/128/14035/14035711.png'
         })
       });
 
@@ -57,18 +68,19 @@ export default function MapItem({id, map, coordinates, title, type}
           map.addLayer(vectorLayer);
       };
 
-      const pointStyle = type === "shelter" ? shelterPoint : collectPoint;
+      const pointStyle = type === "shelter" ? shelterPoint : type === "control" ? controlPoint : type === "collect" ? collectPoint : criticalPoint;
         const pointFeature = createPointFeature(olProj.fromLonLat(coordinates), pointStyle);
         addPointToMap({map, pointFeature: pointFeature});
 
           const overlayContent = `
             Título: ${title} (${id}) <br>
-            ${type === "shelter" ? "Ponto de Abrigo" : type === "control" ? "Ponto de Controle" : "Ponto de Coleta"}
+            ${type === "shelter" ? "Ponto de Abrigo" : type === "control" ? "Ponto de Controle" : type === "collect" ? "Ponto de Coleta" : "Ponto Critico"}
           `;
-          const overlayClass = type === "shelter" ? "bg-[rgba(0,255,0,0.8)]" : type === "control" ? "bg-[rgba(255,255,0,0.8)]" : "bg-[rgba(0,0,255,0.8)]";
+          const overlayClass = type === "shelter" ? "bg-[rgba(0,255,0,0.8)]" : type === "control" ? "bg-[rgba(255,255,0,1)]" : type === "collect" ? "bg-[rgba(0,0,255,0.8)]" : "bg-[rgba(255,0,0,0.8)]";
 
           const overlayContainer = document.createElement("div");
           overlayContainer.classList.add("popupOverlay");
+          type === "control" ? overlayContainer.classList.add("text-black") : null;
           overlayContainer.innerHTML = overlayContent;
           overlayContainer.classList.add(overlayClass);
 
@@ -82,8 +94,8 @@ export default function MapItem({id, map, coordinates, title, type}
 
           const spanType = document.getElementById(`${id}`);
           if (spanType) {
-            const itemTypeClass = type === "shelter" ? "interestShelter" : type === "control" ? "interestControl" : "interestCollect";
-            spanType.classList.remove("interestCollect", "interestShelter", "interestControl");
+            const itemTypeClass = type === "shelter" ? "interestShelter" : type === "control" ? "interestControl" : type === "collect" ? "interestCollect" : "interestCritical";
+            spanType.classList.remove("interestCollect", "interestShelter", "interestControl", "interestCritical");
             spanType.classList.add(itemTypeClass);
           }
 
@@ -109,7 +121,7 @@ export default function MapItem({id, map, coordinates, title, type}
     return(
       <span onClick={mapItemFocus} className='flex flex-col font-bold listItem' style={{background: "rgba(131, 131, 131, 0.3)", borderRadius: "15px", padding:"10px", cursor: "pointer"}}>
           <p>Título: {title}</p>
-          <p id={id.toString()} className={`interestPoint`} >Tipo: {type == "shelter" ? "Ponto de Abrigo" : type == "control" ? "Ponto de Controle" : "Ponto de Coleta"}</p>
+          <p id={id.toString()} className={`interestPoint`} >Tipo: {type == "shelter" ? "Ponto de Abrigo" : type == "control" ? "Ponto de Controle" : type == "collect" ? "Ponto de Coleta" : "Ponto Critico"}</p>
       </span>
 )
 }

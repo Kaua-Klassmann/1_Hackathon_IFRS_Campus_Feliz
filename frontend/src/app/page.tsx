@@ -17,7 +17,7 @@ export default function Home() {
             <Link href={"/login"}>Login</Link>
           </Button>
         </div>
-        <MapPage isAdmin={false}  />
+        <MapPage isAdmin={true}  />
       </div>
     </>
   );

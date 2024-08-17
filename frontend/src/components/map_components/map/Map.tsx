@@ -44,6 +44,8 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
             let latitude = 0
             let longitude = 0
 
+            fetch("http://192.168.1.107:3000/criticsEvents/")
+
             navigator.geolocation.getCurrentPosition((position) => {
                 latitude = position.coords.latitude
                 longitude = position.coords.longitude
@@ -69,7 +71,7 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
             })
         } catch (error) {
           // Log any errors that occur during the data fetch or map initialization
-          console.error('Failed to fetch monitors:', error);
+          console.error(error);
         }
       }
     };
@@ -134,15 +136,48 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
     setIsOpen(true)
   };
 
+  async function handleAddInterest() {
+    const interestTitle = document.getElementById("interestTitle") as HTMLInputElement;
+    const interestType = document.getElementById("interestType") as HTMLSpanElement;
+    const interestLatitude = document.getElementById("interestLatitude") as HTMLInputElement;
+    const interestLongitude = document.getElementById("interestLongitude") as HTMLInputElement;
+    let type= ""
+    switch (interestType.innerText) {
+      case "Controle":
+        type = "control";
+        break;
+      case "Abrigo":
+        type = "shelter";
+        break;
+      case "Coleta":
+        type = "collect";
+        break;
+      case "Evento Crítico":
+        type = "critical event";
+        break;
+    }
+
+    const newInterest = {
+      title: interestTitle.value,
+      type: type,
+      latitude: interestLatitude.value,
+      longitude: interestLongitude.value,
+      id: 1
+    }
+
+    setInterestPoints([...interestPoints, newInterest]);
+    setIsOpen(false);
+  }
+
   isAdmin ? map?.on("singleclick", getClickCoordinate) : null;
 
 
   return (
       <section id='mapSection'>
-        <div id='map' className={`w-screen h-screen ${!map ? "flex justify-center items-center" : null}`}>
+        <div id='map' className={`w-[70vw] h-[70vh] ${!map ? "flex justify-center items-center" : null}`}>
           {
             !map ? 
-              <p className='colorChange'></p>
+              <p className='colorChange'>Carregando Mapa</p>
             : 
             null
           }
@@ -158,6 +193,7 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
               <button type='button' style={{background: "#00ba00"}} onClick={handleFilterClick}>Abrigo</button>
               <button type='button' style={{background: "rgba(255,255,0,0.8)"}} onClick={handleFilterClick}>Controle</button>
               <button type='button' style={{background: "blue"}} onClick={handleFilterClick}>Coleta</button>
+              <button type='button' style={{background: "red"}} onClick={handleFilterClick}>Evento Critico</button>
             </div>
           </div>
           <div className={`listItems ${!map ? "overflow-x-hidden p-10" : null}`}>
@@ -168,19 +204,13 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
                 const longitude = interestPoint.longitude
                 if (latitude!=null && longitude!=null) {
                   return(
-                    <MapItem id={key} map={map} coordinates={[Number(longitude), Number(latitude)]} title={interestPoint.title} type={interestPoint.type}/>                
+                    <MapItem id={key} map={map} coordinates={[Number(longitude), Number(latitude)]} title={interestPoint.title} type={interestPoint.type} />                
                 )
                 }
               })
             :
             <p className='colorChange' style={{fontSize: "1rem", width:"290px"}}>{}</p>
 
-          }
-          {
-            map != null ?
-          <MapItem id={1} map={map!} coordinates={[52.123, 20.123]} title={"Teste"} type={"shelter"}/>
-          :
-          null
           }
           </div>
         </div>
@@ -196,30 +226,32 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
             <DialogTitle className="text-2xl font-bold text-black">Adicione um ponto de interesse</DialogTitle>
             <Label className="block mt-4">
               <span className="block text-sm font-medium text-gray-700">Título</span>
-              <Input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+              <Input id='interestTitle' type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
             </Label>
             <Label className="block mt-4">
               <span className="block text-sm font-medium text-gray-700">Latitude</span>
-              <Input type="number" defaultValue={newInterestCoordinates[1]} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+              <Input id='interestLatitude' type="number" defaultValue={newInterestCoordinates[1]} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
             </Label>
             <Label className="block mt-4">
               <span className="block text-sm font-medium text-gray-700">Longitude</span>
-              <Input type="number" defaultValue={newInterestCoordinates[0]} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+              <Input type="number" id='interestLongitude' defaultValue={newInterestCoordinates[0]} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
             </Label>
             <Label className="block mt-4">
               <span className="block text-sm font-medium text-gray-700">Tipo</span>
               <Select>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
+                  <SelectValue id='interestType' placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Selecione">Selecione</SelectItem>
                   <SelectItem value="Abrigo">Abrigo</SelectItem>
                   <SelectItem value="Coleta">Coleta</SelectItem>
+                  <SelectItem value="Controle">Controle</SelectItem>
+                  <SelectItem value="Evento Critico">Evento Crítico</SelectItem>
                 </SelectContent>
               </Select>
             </Label>
-            <Button type="submit" className="mt-4 w-full bg-indigo-600 px-4 py-2 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Adicionar</Button>
+            <Button type="submit" onClick={handleAddInterest} className="mt-4 w-full bg-indigo-600 px-4 py-2 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Adicionar</Button>
         </DialogContent>
         </Dialog>
 

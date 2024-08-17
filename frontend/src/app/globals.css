@@ -104,3 +104,45 @@
     align-items: center;
     flex-direction: column;
   }
+
+  .interestShelter{
+    background: rgba(0,255,0,0.8);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .interestCollect{
+    background: rgba(0,0,255,0.8);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .interestControl{
+    background: rgba(255,255,0,0.8);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .interestCritical{
+    background: rgba(255,0,0,0.8);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+  }
+
+
+  @keyframes loading {
+    0% { color: red; }
+    33% { color: yellow; }
+    66% { color: green; }
+    100% { color: blue; }
+  }
+
+  .colorChange {
+    animation: loading 1.5s infinite;
+  }
+
+  .listItems{
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
