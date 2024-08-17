@@ -1,0 +1,98 @@
+CREATE TABLE "TipoUsuario"(
+	"id" SERIAL PRIMARY KEY,
+  "tipo" VARCHAR NOT NULL,
+  "createdAt" DATE DEFAULT CURRENT_DATE,
+  "updatedAt" DATE DEFAULT CURRENT_DATE
+);
+
+INSERT INTO "TipoUsuario"("tipo") VALUES
+('padrão'),
+('admin');
+
+CREATE TABLE "Usuario"(
+  "id" uuid PRIMARY KEY,
+  "nome" VARCHAR NOT NULL,
+  "email" VARCHAR NOT NULL,
+  "senha" VARCHAR NOT NULL,
+  "cep" VARCHAR NOT NULL,
+  "idValidacao" uuid,
+  "validado" DATE,
+  "idTipoUsuario" INTEGER NOT NULL REFERENCES "TipoUsuario"("id") DEFAULT 1,
+  "createdAt" DATE DEFAULT CURRENT_DATE,
+  "updatedAt" DATE DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE "Habilidade" (
+	"id" SERIAL PRIMARY KEY,
+  "nome" VARCHAR NOT NULL,
+  "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
+  "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+INSERT INTO "Habilidade"("nome") VALUES
+('Habilitação'),
+('Primeiros Socorros'),
+('Culinária'),
+('Limpeza'),
+('Contrução'),
+('Gerenciamento'),
+('Separação de Donativos');
+
+CREATE TABLE "Usuario_Habilidade" (
+	"id" SERIAL PRIMARY KEY,
+  "idUsuario" uuid NOT NULL REFERENCES "Usuario"("id"),
+  "idHabilidade" INTEGER NOT NULL REFERENCES "Habilidade"("id"),
+  "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
+  "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE "TipoEventoCritico" (
+	"id" SERIAL PRIMARY KEY,
+  "tipo" VARCHAR NOT NULL,
+  "rangeEvento" DECIMAL(10, 2) NOT NULL,
+  "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
+  "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+INSERT INTO "TipoEventoCritico"("tipo", "rangeEvento") VALUES
+('Deslizamento', 3),
+('Enchente', 8),
+('Alagamento', 8),
+('Inundação', 8),
+('Ciclone', 5),
+('Ondas de Calor', 9),
+('Incêndio Florestal', 3),
+('Seca', 7);
+
+CREATE TABLE "EventoCritico" (
+	"id" UUID PRIMARY KEY,
+  "nome" VARCHAR NOT NULL,
+  "cep" VARCHAR NOT NULL,
+  "idTipoEventoCritico" INTEGER NOT NULL REFERENCES "TipoEventoCritico"("id"),
+  "estado" VARCHAR NOT NULL
+  "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
+  "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE "TipoPontoEvento" (
+	"id" SERIAL PRIMARY KEY,
+  "tipo" VARCHAR NOT NULL,
+  "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
+  "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+INSERT INTO "TipoPontoEvento"("tipo") VALUES
+('Coleta'),
+('Abrigo'),
+('Central de Controle');
+
+CREATE TABLE "PontoEvento" (
+	"id" UUID PRIMARY KEY,
+  "nome" VARCHAR NOT NULL,
+  "idTipoPontoEvento" INTEGER NOT NULL REFERENCES "TipoPontoEvento"("id"),
+  "idEventoCritico" UUID NOT NULL REFERENCES "EventoCritico"("id"),
+  "latitude" DOUBLE PRECISION NOT NULL,
+  "longitude" DOUBLE PRECISION NOT NULL,
+  "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
+  "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
+);

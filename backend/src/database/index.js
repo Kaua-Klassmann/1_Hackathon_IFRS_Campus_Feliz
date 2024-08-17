@@ -1,8 +1,26 @@
 import Sequelize from "sequelize";
 
+import TipoUsuario from "../models/TipoUsuario.js";
+import Usuario from "../models/Usuario.js";
+import Habilidade from "../models/Habilidade.js";
+import Usuario_Habilidade from "../models/Usuario_Habilidade.js";
+import EventoCritico from "../models/EventoCritico.js";
+import TipoEventoCritico from "../models/TipoEventoCritico.js";
+import PontoEvento from "../models/PontoEvento.js";
+import TipoPontoEvento from "../models/TipoPontoEvento.js";
+
 import databaseConfig from "../config/database.js";
 
-const models = [];
+const models = [
+  TipoUsuario,
+  Usuario,
+  Habilidade,
+  Usuario_Habilidade,
+  EventoCritico,
+  TipoEventoCritico,
+  PontoEvento,
+  TipoPontoEvento,
+];
 
 class Database {
   constructor() {
