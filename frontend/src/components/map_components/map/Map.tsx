@@ -3,7 +3,7 @@ import Map  from 'ol/Map.js';
 import OSM from 'ol/source/OSM.js';
 import TileLayer from 'ol/layer/Tile.js';
 import View from 'ol/View.js';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as olProj from 'ol/proj'
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
@@ -16,30 +16,50 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { TabsContent } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import getSkills from '@/services/getSkills';
 export default function MapPage({isAdmin}: {isAdmin: boolean}) {
   type interestType = {
-    title: string,
-    type: string,
-    id: number,
-    latitude: string,
-    longitude: string,
+    nome: string,
+    idTipoPontoEvento: number,
+    idEventoCritico: string,
+    latitude: number,
+    longitude: number,
+    habilidades?: number[]
   }
   type criticInterestType = {
     nome: string,
-    tipoEventoCritico: {
+    tipoEventoCritico?: {
       rangeEvents: number,
       tipo: string
     },
     latitude: number,
-    longitude: number
+    longitude: number,
+    idTipoEventoCritico?: number,
+    id?: number
   }
+  type criticEventType = {
+    id: number,
+    tipo: string,
+    rangeEvento: number
+  }
+  type skillsType = {
+    id: number,
+    nome: string
+  }
+
   var isRendered = false
   const [interestPoints, setInterestPoints] = React.useState<interestType[]>([])
   const [criticInterestPoints, setCriticInterestPoints] = React.useState<criticInterestType[]>([])
+  const [criticEventTypes, setCriticEventTypes] = React.useState<criticEventType[]>([])
   const [map, setMap] = React.useState<Map | null>(null)
   const [isOpen, setIsOpen] = React.useState(false)
   const [newInterestCoordinates, setNewInterestCoordinates] = React.useState([0,0])
-  const [isCriticalEvent, setIsCriticalEvent] = React.useState<boolean | undefined>(undefined)
+  const [isCriticalEvent, setIsCriticalEvent] = React.useState<boolean>(false)
+  const [criticalpointId, setCriticalpointId] = React.useState<string>()
+  const [skills, setSkills] = useState<skillsType[]>()
+  let habilidadesArray: number[] = []
 
   useEffect(() => {
     /**
@@ -54,7 +74,7 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
             let latitude = 0
             let longitude = 0
 
-            fetch("http://localhost:4000/criticsEvents/RS", {
+            fetch("http://192.168.1.107:3000/criticsEvents/RS", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -63,6 +83,28 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
             }).then((response) => response.json()).then((data) => {
                 setCriticInterestPoints([...data])
             })
+
+            fetch("http://192.168.1.107:3000/pointsEvents", {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjM4ODg0MDUsImV4cCI6MTcyMzk3NDgwNX0.OwkZ4NJ99ktt_z9rTJ-hIvb2cB2d4-Bv6sCLuYpomns`
+              },
+          }).then((response) => response.json()).then((data) => {
+              setInterestPoints([...data])
+          })
+
+            fetch("http://192.168.1.107:3000/typesCriticsEvents", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjM4ODg0MDUsImV4cCI6MTcyMzk3NDgwNX0.OwkZ4NJ99ktt_z9rTJ-hIvb2cB2d4-Bv6sCLuYpomns`
+                },
+            }).then((response) => response.json()).then((data) => {
+                setCriticEventTypes([...data])
+            })
+              const skills = await getSkills()
+              setSkills(skills)
 
             
 
@@ -161,7 +203,9 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
     const interestType = document.getElementById("interestType") as HTMLSpanElement;
     const interestLatitude = document.getElementById("interestLatitude") as HTMLInputElement;
     const interestLongitude = document.getElementById("interestLongitude") as HTMLInputElement;
-    const interestCriticalEvent = document.getElementById("interestCriticalEvent") as HTMLInputElement;
+    const interestCriticalEvent = document.getElementById("interestCriticalEvent") as HTMLInputElement | null;
+    const interestCriticalType = document.getElementById("interestCriticalType") as HTMLSpanElement | null;
+    console.log(habilidadesArray)
     let type= 0
     switch (interestType.innerText) {
       case "Controle":
@@ -178,34 +222,64 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
         break;
     }
 
-    const newInterest = {
-      nome: interestTitle.value,
-      idTipoPontoEvento: type,
-      latitude: interestLatitude.value,
-      longitude: interestLongitude.value,
-      id: 1
+    if (interestCriticalEvent != null) {
+      const newInterest : interestType = {
+        nome: interestTitle.value,
+        idTipoPontoEvento: type,
+        latitude: Number(interestLatitude.value),
+        longitude: Number(interestLongitude.value),
+        idEventoCritico: criticalpointId!,
+        habilidades: habilidadesArray,
+      }
+  
+      
+  
+      fetch("http://192.168.1.107:3000/pointEvent", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQxZmVkNGUzLWMxODItNDI3ZC04OTZlLWEwZGI0MzE0YmE5NiIsImNlcCI6Ijk1MTUwMDAwIiwiaWRUaXBvVXN1YXJpbyI6MiwiaWF0IjoxNzIzOTA0MzE2LCJleHAiOjE3MjM5OTA3MTZ9.sR8EEBOvrZHU6fT6CZMCJAYlmAiLGhVJIma4DDNnRRU`
+        },
+        body: JSON.stringify(newInterest)
+      })
+  
+      setInterestPoints([...interestPoints, newInterest]);
+      setIsOpen(false);
+    }else if (interestCriticalType != null) {
+      
+      const newInterest : criticInterestType = {
+        nome: interestTitle.value,
+        latitude: Number(interestLatitude.value),
+        longitude: Number(interestLongitude.value),
+        idTipoEventoCritico: criticEventTypes.find((event) => event.tipo === interestCriticalType.innerText)?.id,
+      }
+
+      fetch("http://192.168.1.107:3000/criticsEvent", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQxZmVkNGUzLWMxODItNDI3ZC04OTZlLWEwZGI0MzE0YmE5NiIsImNlcCI6Ijk1MTUwMDAwIiwiaWRUaXBvVXN1YXJpbyI6MiwiaWF0IjoxNzIzOTA0MzE2LCJleHAiOjE3MjM5OTA3MTZ9.sR8EEBOvrZHU6fT6CZMCJAYlmAiLGhVJIma4DDNnRRU`
+        },
+        body: JSON.stringify(newInterest)
+      }).then(() => {
+        fetch("http://192.168.1.107:3000/typesCriticsEvents", {
+          method: "GET",
+          headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjM4ODg0MDUsImV4cCI6MTcyMzk3NDgwNX0.OwkZ4NJ99ktt_z9rTJ-hIvb2cB2d4-Bv6sCLuYpomns`
+          },
+      }).then((response) => response.json()).then((data) => {
+          setCriticEventTypes([...data])
+      })
+      })
+      
+
     }
-
-    
-
-    fetch("http://localhost:4000/pointEvent", {
-      method: "POST",
-      headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjM4ODg0MDUsImV4cCI6MTcyMzk3NDgwNX0.OwkZ4NJ99ktt_z9rTJ-hIvb2cB2d4-Bv6sCLuYpomns`
-      },
-      body: JSON.stringify(newInterest)
-    }).then((response) => response.json()).then((data) => {
-        setCriticInterestPoints([...data])
-    })
-
-    setInterestPoints([...interestPoints, newInterest]);
-    setIsOpen(false);
   }
 
   isAdmin ? map?.on("singleclick", getClickCoordinate) : null;
-
-
+  
+  
   return (
       <section id='mapSection'>
         <div id='map' className={`w-[70vw] h-[70vh] ${!map ? "flex justify-center items-center" : null}`}>
@@ -238,7 +312,7 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
                 const longitude = interestPoint.longitude
                 if (latitude!=null && longitude!=null) {
                   return(
-                    <MapItem id={key} map={map} coordinates={[Number(longitude), Number(latitude)]} title={interestPoint.title} type={interestPoint.type} />                
+                    <MapItem id={key} map={map} coordinates={[Number(longitude), Number(latitude)]} title={interestPoint.nome} type={interestPoint.idTipoPontoEvento} />                
                 )
                 }
               })
@@ -252,7 +326,7 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
                 const longitude = criticInterestPoint.longitude
                 if (latitude!=null && longitude!=null) {
                   return(
-                    <MapItem id={key} map={map} coordinates={[Number(longitude), Number(latitude)]} title={criticInterestPoint.nome} type={"critical event"} multiplier={criticInterestPoint.tipoEventoCritico.rangeEvents} />                
+                    <MapItem id={key} map={map} coordinates={[longitude, latitude]} title={criticInterestPoint.nome} type={0} multiplier={criticInterestPoint.tipoEventoCritico!.rangeEvents} />                
                 )
                 }
               })
@@ -285,37 +359,79 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
             </Label>
             <Label className="block mt-4">
               <span className="block text-sm font-medium text-gray-700">Tipo</span>
-              <Select>
+              <Select onValueChange={(e) => {e == "Evento Critico" ? setIsCriticalEvent(true) : setIsCriticalEvent(false)}}>
                 <SelectTrigger>
                   <SelectValue id='interestType' placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Selecione">Selecione</SelectItem>
-                  <SelectItem value="Abrigo">Abrigo</SelectItem>
-                  <SelectItem value="Coleta">Coleta</SelectItem>
+                  <SelectItem value="Abrigo" >Abrigo</SelectItem>
+                  <SelectItem value="Coleta" >Coleta</SelectItem>
                   <SelectItem value="Controle">Controle</SelectItem>
                   <SelectItem value="Evento Critico">Evento Crítico</SelectItem>
                 </SelectContent>
               </Select>
             </Label>
-            <Label className="block mt-4">
-              <span className="block text-sm font-medium text-gray-700">Evento Crítico Relacionado</span>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue id='interestCriticalEvent' placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Selecione">Selecione</SelectItem>
-                  {
-                    criticInterestPoints.map((criticalEvent, key) => {
-                      return(
-                        <SelectItem key={key} value={criticalEvent.nome}>{criticalEvent.nome}</SelectItem>
-                      )
-                    })
-                  }
-                </SelectContent>
-              </Select>
-            </Label>
+            {
+               isCriticalEvent ?
+                <Label className="block mt-4">
+                  <span className="block text-sm font-medium text-gray-700">Tipo de Evento Critico</span>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue id='interestCriticalType' placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {
+                        criticEventTypes.map((criticalEventType, key) => {
+                          return(
+                            <SelectItem key={key} value={criticalEventType.id.toString()}>{criticalEventType.tipo}</SelectItem>
+                          )
+                        })
+                      }
+                    </SelectContent>
+                  </Select>
+                </Label>
+               :
+               <>
+                <Label className="block mt-4">
+                  <span className="block text-sm font-medium text-gray-700">Evento Crítico Relacionado</span>
+                  <Select onValueChange={(e) => {console.log(e);setCriticalpointId(e)}}>
+                    <SelectTrigger>
+                      <SelectValue id='interestCriticalEvent' placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                          {
+                            criticInterestPoints.map((criticalInterestPoint, key) => {
+                              return(
+                                <SelectItem key={key} value={criticalInterestPoint.id!.toString()}>{criticalInterestPoint.nome}</SelectItem>
+                              )
+                            })
+                          }
+                    </SelectContent>
+                  </Select>
+                </Label>
+                
+                <div className="flex items-center justify-center">
+                  <div className="flex flex-wrap gap-4">
+                      {
+                        skills != undefined ? skills.map(({ id, nome }) => (
+                          <div className="flex gap-4 flex-wrap">
+                              <Checkbox key={id} onClick={() => habilidadesArray.push(id)} />
+                              <div className="grid gap-1.5 leading-none">
+                                  <Label
+                                  htmlFor="terms1"
+                                  className="text-sm text-black font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                  {nome}
+                                  </Label>
+                              </div>
+                          </div>
+                      )) : null
+                      }
+                  </div>
+              </div>
+               </>
+            }
+
             <Button type="submit" onClick={handleAddInterest} className="mt-4 w-full bg-indigo-600 px-4 py-2 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Adicionar</Button>
         </DialogContent>
         </Dialog>
