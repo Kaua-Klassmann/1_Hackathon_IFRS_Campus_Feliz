@@ -39,6 +39,7 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
   const [map, setMap] = React.useState<Map | null>(null)
   const [isOpen, setIsOpen] = React.useState(false)
   const [newInterestCoordinates, setNewInterestCoordinates] = React.useState([0,0])
+  const [isCriticalEvent, setIsCriticalEvent] = React.useState<boolean | undefined>(undefined)
 
   useEffect(() => {
     /**
@@ -160,36 +161,40 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
     const interestType = document.getElementById("interestType") as HTMLSpanElement;
     const interestLatitude = document.getElementById("interestLatitude") as HTMLInputElement;
     const interestLongitude = document.getElementById("interestLongitude") as HTMLInputElement;
-    let type= ""
+    const interestCriticalEvent = document.getElementById("interestCriticalEvent") as HTMLInputElement;
+    let type= 0
     switch (interestType.innerText) {
       case "Controle":
-        type = "control";
+        type = 3;
         break;
       case "Abrigo":
-        type = "shelter";
+        type = 2;
         break;
       case "Coleta":
-        type = "collect";
+        type = 1;
         break;
       case "Evento Crítico":
-        type = "critical event";
+        type = 0;
         break;
     }
 
     const newInterest = {
-      title: interestTitle.value,
-      type: type,
+      nome: interestTitle.value,
+      idTipoPontoEvento: type,
       latitude: interestLatitude.value,
       longitude: interestLongitude.value,
       id: 1
     }
 
-    fetch("http://localhost:4000/", {
-      method: "GET",
+    
+
+    fetch("http://localhost:4000/pointEvent", {
+      method: "POST",
       headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjM4ODg0MDUsImV4cCI6MTcyMzk3NDgwNX0.OwkZ4NJ99ktt_z9rTJ-hIvb2cB2d4-Bv6sCLuYpomns`
       },
+      body: JSON.stringify(newInterest)
     }).then((response) => response.json()).then((data) => {
         setCriticInterestPoints([...data])
     })
@@ -238,7 +243,7 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
                 }
               })
             :
-            <p className='colorChange' style={{fontSize: "1rem", width:"290px"}}>Carregando Pontos</p>
+            null
           }
           {
             map != null && criticInterestPoints.length>0 ?
@@ -290,6 +295,24 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
                   <SelectItem value="Coleta">Coleta</SelectItem>
                   <SelectItem value="Controle">Controle</SelectItem>
                   <SelectItem value="Evento Critico">Evento Crítico</SelectItem>
+                </SelectContent>
+              </Select>
+            </Label>
+            <Label className="block mt-4">
+              <span className="block text-sm font-medium text-gray-700">Evento Crítico Relacionado</span>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue id='interestCriticalEvent' placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Selecione">Selecione</SelectItem>
+                  {
+                    criticInterestPoints.map((criticalEvent, key) => {
+                      return(
+                        <SelectItem key={key} value={criticalEvent.nome}>{criticalEvent.nome}</SelectItem>
+                      )
+                    })
+                  }
                 </SelectContent>
               </Select>
             </Label>

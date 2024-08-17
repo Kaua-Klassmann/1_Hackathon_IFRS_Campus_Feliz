@@ -2,22 +2,31 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SyntheticEvent, useState } from "react";
+import { SyntheticEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import createUser from "@/services/createUser";
 import { Toaster, toast } from "sonner";
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction, AlertDialogHeader, AlertDialogFooter } from '@/components/ui/alert-dialog';
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs"
+import getSkills from "@/services/getSkills";
 
 interface ErrorItem {
     field: string | number;
     message: string;
 }
 
-export default function Page(){
-    const [username, setUsername] = useState("")
+export default function Page(){   
+
+    const [nome, setNome] = useState("")
     const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+    const [cep, setCep] = useState("")  
+    const [senha, setSenha] = useState("")
     const [passwordCheck, setPasswordCheck] = useState("")
     const [terms, setTerms] = useState(false)
 
@@ -26,17 +35,12 @@ export default function Page(){
     const [errorsPassword, setErrorsPassword] = useState<ErrorItem[]>([]); 
     const [errorsPasswordMatch, seterrorsPasswordMatch] = useState("");
 
-    const arrayErroUsername: any[] = []
-    const arrayErroEmail: any[] = []
-    const arrayErroPasswrod: any[] = []
-
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const router = useRouter()
+    const [skills, setSkills] = useState([])
+    let habilidades: number[] = []
 
-    function chengeDialog(){
-        setIsDialogOpen(!isDialogOpen);
-    };
+    const router = useRouter()
 
     function redirectUser(){
         toast.success("User created successfully")
@@ -44,15 +48,11 @@ export default function Page(){
     }
 
     function changeTerms(){
-        if(terms){
-            setTerms(false)
-        } else {
-            setTerms(true)
-        }
+        setTerms(!terms)
     }
 
     function passwordMatch(){
-        if(password != passwordCheck){
+        if(senha != passwordCheck){
             seterrorsPasswordMatch("Passwords do not match")
         } else {
             seterrorsPasswordMatch("")
@@ -61,70 +61,18 @@ export default function Page(){
     
     async function handleSubmit(event: SyntheticEvent){
         event.preventDefault()
-
-        seterrorsUsername([])
-        seterrorsEmail([])
-        setErrorsPassword([])
-
-        //------------------------------------------------
-
-        if(!terms){
-            toast.error("You need to accept the terms")
-        }
-
-        if(password != passwordCheck){
-            toast.error("Passwords do not match")
-        }
-
-        //------------------------------------------------
-
-        const result = await createUser(username, email, password)
-
-        if(result.error){
-            toast.error("Please correct the errors in the form")
-
-            for(const erro of result.error){
-                switch (erro.field) {
-                    case "username":
-                        arrayErroUsername.push(erro)
-                        break;
-                    case "email":
-                        arrayErroEmail.push(erro)
-                        break;
-                    default:
-                        break;
-                }
-            }
-            seterrorsUsername(arrayErroUsername as ErrorItem[])
-            seterrorsEmail(arrayErroEmail as ErrorItem[])
-        }
-
-        if(result.errorsZed){
-            toast.error("Please correct the errors in the form")
-
-            for(const erro of result.errorsZed){
-                switch (erro.field) {
-                    case "username":
-                        arrayErroUsername.push(erro)
-                        break;
-                    case "email":
-                        arrayErroEmail.push(erro)
-                        break;
-                    case "password":
-                        arrayErroPasswrod.push(erro)
-                        break;
-                    default:
-                        break;
-                }
-            }
-            seterrorsUsername(arrayErroUsername as ErrorItem[])
-            seterrorsEmail(arrayErroEmail as ErrorItem[])
-            setErrorsPassword(arrayErroPasswrod as ErrorItem[])
-        }
-
-        if(!result.error && !result.errorsZed) {
+        const result = await createUser(nome, email, cep, senha, habilidades)
+        if(result){
+            console.log("erro")
+        } else {
             setIsDialogOpen(true)
         }
+
+    }
+
+    async function generateSkills(){
+        const skills = await getSkills()
+        setSkills(skills)
     }
 
     return(
@@ -145,45 +93,74 @@ export default function Page(){
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-                <form className="w-72 flex flex-col gap-5" onSubmit={handleSubmit}>
-                    <Input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)}></Input>
-                    <>
-                        {errorsUsername.map((error, index) => (
-                            <p key={index} className="text-red-500 text-xs">{error.message}</p>
-                        ))}
-                    </>
-                    <Input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)}></Input>
-                    <>
-                        {errorsEmail.map((error, index) => (
-                            <p key={index} className="text-red-500 text-xs">{error.message}</p>
-                        ))}
-                    </>
-                    <Input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)}></Input>
-                    <>
-                        {errorsPassword.map((error, index) => (
-                            <p key={index} className="text-red-500 text-xs">{error.message}</p>
-                        ))}
-                    </>
-                    <Input type="password" placeholder="Confirm Password" onChange={(e) => setPasswordCheck(e.target.value)} onKeyUp={passwordMatch}></Input>
-                    <>
-                        <p className="text-red-500 text-xs">{errorsPasswordMatch}</p>
-                    </>
-                    <div className="flex gap-4">
-                        <Checkbox id="terms" onClick={changeTerms}/>
-                        <div className="grid gap-1.5 leading-none">
-                            <label
-                            htmlFor="terms1"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                            Accept terms and conditions
-                            </label>
-                            <p className="text-sm text-muted-foreground">
-                            You agree to our Terms of<br />Service and Privacy Policy.
-                            </p>
+                <Tabs defaultValue="account" className="w-[300px]">
+                    <TabsList className="grid w-full grid-cols-2 mb-10">
+                        <TabsTrigger value="conta">Conta</TabsTrigger>
+                        <TabsTrigger value="habilidade" onClick={generateSkills}>Habilidades</TabsTrigger>
+                    </TabsList>
+                    <TabsContent className="flex items-center justify-center" value="conta">
+                        <form className="w-full flex flex-col gap-5" onSubmit={handleSubmit}>
+                            <Input type="text" placeholder="Nome Completo" value={nome} onChange={(e) => setNome(e.target.value)}></Input>
+                            <>
+                                {errorsUsername.map((error, index) => (
+                                    <p key={index} className="text-red-500 text-xs">{error.message}</p>
+                                ))}
+                            </>
+                            <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}></Input>
+                            <>
+                                {errorsEmail.map((error, index) => (
+                                    <p key={index} className="text-red-500 text-xs">{error.message}</p>
+                                ))}
+                            </>
+                            <Input type="text" placeholder="CEP" value={cep} onChange={(e) => setCep(e.target.value)}></Input>
+                            <Input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)}></Input>
+                            <>
+                                {errorsPassword.map((error, index) => (
+                                    <p key={index} className="text-red-500 text-xs">{error.message}</p>
+                                ))}
+                            </>
+                            <Input type="password" placeholder="Confirmar Senha" value={passwordCheck} onChange={(e) => setPasswordCheck(e.target.value)} onKeyUp={passwordMatch}></Input>
+                            <>
+                                <p className="text-red-500 text-xs">{errorsPasswordMatch}</p>
+                            </>
+                            <div className="flex gap-4">
+                                <Checkbox id="terms" onClick={changeTerms}/>
+                                <div className="grid gap-1.5 leading-none">
+                                    <label
+                                    htmlFor="terms1"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                    Accept terms and conditions
+                                    </label>
+                                    <p className="text-sm text-muted-foreground">
+                                    You agree to our Terms of<br />Service and Privacy Policy.
+                                    </p>
+                                </div>
+                            </div>
+                            <Button type="submit">Criar Conta</Button>
+                        </form>
+                    </TabsContent>
+                    <TabsContent className="flex items-center justify-center" value="habilidade">
+                        <div className="flex flex-col gap-4">
+                            {skills.map(({ id, nome }) => (
+                                <div className="flex gap-4">
+                                    <Checkbox key={id} onClick={() => habilidades.push(id)} />
+                                    <div className="grid gap-1.5 leading-none">
+                                        <label
+                                        htmlFor="terms1"
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                        {nome}
+                                        </label>
+                                        <p className="text-sm text-muted-foreground">
+                                        You agree to our Terms of<br />Service and Privacy Policy.
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                    <Button type="submit">Create Account</Button>
-                </form>
+                    </TabsContent>
+                </Tabs>
             </div>
         </>
     )
