@@ -27,6 +27,18 @@ class PontoEventoController {
 
     return res.send();
   }
+
+  async index(req, res) {
+    const pontos = await PontoEvento.findAll({
+      attributes: ["id", "nome", "latitude", "longitude"],
+    });
+
+    if (!pontos) {
+      return res.status(400).json({ error: "Nenhum ponto encontrado" });
+    }
+
+    return res.json(pontos);
+  }
 }
 
 export default new PontoEventoController();
