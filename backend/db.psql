@@ -98,3 +98,11 @@ CREATE TABLE "PontoEvento" (
   "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
   "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
 );
+
+CREATE TABLE "PontoEvento_Habilidade" (
+	"id" SERIAL PRIMARY KEY,
+  "idHabilidade" INTEGER NOT NULL REFERENCES "Habilidade"("id"),
+  "idPontoEvento" UUID NOT NULL REFERENCES "PontoEvento"("id"),
+  "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
+  "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
+);

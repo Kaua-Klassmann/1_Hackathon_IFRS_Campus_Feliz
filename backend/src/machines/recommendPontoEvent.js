@@ -16,17 +16,20 @@ function calcularScore(vetorA, vetorB) {
   return dotProduct / (magnitudeA * magnitudeB);
 }
 
-export default function recomendarpontoEvento(usuario, pontoEvento) {
-  const categorias = [
-    ...new Set(pontoEventos.flatMap((pontoEvento) => pontoEvento.categorias)),
-  ];
+export default function recomendarPontoEvento(
+  habilidadesUsuario,
+  habilidades,
+  habilidadesPontoEventos
+) {
+  const vetorUsuario = vetorizar(habilidadesUsuario, habilidades);
 
-  const vetorUsuario = vetorizar(usuario.interesses, categorias);
-
-  const scores = pontoEventos.map((pontoEvento) => {
-    const vetorpontoEvento = vetorizar(pontoEvento.categorias, categorias);
-    const score = calcularScore(vetorUsuario, vetorpontoEvento);
-    return { pontoEvento: pontoEvento.nome, score };
+  const scores = habilidadesPontoEventos.map((habilidadePontoEvento) => {
+    const vetorPontoEvento = vetorizar(
+      habilidadePontoEvento.idHabilidade,
+      habilidades
+    );
+    const score = calcularScore(habilidadesUsuario, vetorPontoEvento);
+    return { pontoEvento: pontoEvento.idPontoEvento, score };
   });
 
   const recomendacoes = scores.sort((a, b) => b.score - a.score);
