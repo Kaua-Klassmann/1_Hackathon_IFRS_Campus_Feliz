@@ -5,22 +5,21 @@ import TileLayer from 'ol/layer/Tile.js';
 import View from 'ol/View.js';
 import React, { useEffect } from 'react';
 import * as olProj from 'ol/proj'
-//import MapItem from './MapItem';
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import MapItem from '../MapItem';
 export default function MapPage() {
-  type monitorsType = {
-    name: string,
-    IP : string,
+  type interestType = {
+    title: string,
+    type: string,
     id: number,
     latitude: string,
     longitude: string,
-    monitorBeatInterval: number
   }
   var isRendered = false
   const router = useRouter()
-  const [monitors,setMonitors] = React.useState<monitorsType[]>([])
+  const [interestPoints, setInterestPoints] = React.useState<interestType[]>([])
   const [map, setMap] = React.useState<Map | null>(null)
 
   useEffect(() => {
@@ -92,11 +91,28 @@ export default function MapPage() {
     setFilterStatus(filterStatus === currentFilter ? "" : currentFilter);
   };
 
-  function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem("csrf_token");
-    router.back();
-  }
+  useEffect(() => {
+    const listItems = document.querySelectorAll(".listItem");
+    listItems.forEach((listItem) => {
+      const text = listItem.textContent?.toLowerCase() || "";
+      const isActive = listItem.children[1].classList.contains("interestShelter");
+      const isInactive = listItem.children[1].classList.contains("interestProblem");
+      const isMaintance = listItem.children[1].classList.contains("interestCollect");
+      const isMatchSearch = text.includes(searchText);
+      const isMatchFilter =
+        (filterStatus === "") ||
+        (filterStatus === "Abrigo".toLowerCase() && isActive) ||
+        (filterStatus === "Problema".toLowerCase() && isInactive) ||
+        (filterStatus === "Coleta".toLowerCase() && isMaintance);
+      if (isMatchSearch && isMatchFilter) {
+        listItem.classList.remove("hiddenItem");
+        listItem.classList.add("flex");
+      } else {
+        listItem.classList.remove("flex");
+        listItem.classList.add("hiddenItem");
+      }
+    });
+  }, [searchText, filterStatus]);
 
   return (
       <section id='mapSection'>
@@ -111,26 +127,25 @@ export default function MapPage() {
 
         
 
-        <div id='monitorList'>
+        <div id='interestList'>
           <h3 className='text-2xl'>{}</h3>
           <div className='searchDiv'>
-            <input onChange={handleSearch} type="search" id="search-input" placeholder={"asdsa"} />
+            <input onChange={handleSearch} type="search" id="search-input" placeholder={"Inserir nome"} />
             <div id='filterBtns'>
-              <button type='button' style={{background: "#00ba00"}} onClick={handleFilterClick}></button>
-              <button type='button' style={{background: "red"}} onClick={handleFilterClick}></button>
-              <button type='button' style={{background: "blue"}} onClick={handleFilterClick}></button>
+              <button type='button' style={{background: "#00ba00"}} onClick={handleFilterClick}>Abrigo</button>
+              <button type='button' style={{background: "red"}} onClick={handleFilterClick}>Problema</button>
+              <button type='button' style={{background: "blue"}} onClick={handleFilterClick}>Coleta</button>
             </div>
           </div>
           <div className={`listItems ${!map ? "overflow-x-hidden p-10" : null}`}>
             {
-            map != null && monitors.length>0 ?
-              monitors.map((monitor, key) => {
-                const latitude = monitor.latitude
-                const longitude = monitor.longitude
+            map != null && interestPoints.length>0 ?
+              interestPoints.map((interestPoint, key) => {
+                const latitude = interestPoint.latitude
+                const longitude = interestPoint.longitude
                 if (latitude!=null && longitude!=null) {
                   return(
-                    //<MapItem monitorBeatInterval={monitor.monitorBeatInterval} coordinates={[Number(longitude), Number(latitude)]} map={map!} name={monitor.name} IP={monitor.IP} id={monitor.id} />
-                    <div>sasdad</div>
+                    <MapItem id={key} map={map} coordinates={[Number(longitude), Number(latitude)]} title={interestPoint.title} type={interestPoint.type}/>                
                 )
                 }
               })
