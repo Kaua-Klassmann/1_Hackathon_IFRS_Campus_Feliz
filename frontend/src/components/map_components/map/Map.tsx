@@ -24,9 +24,18 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
     latitude: string,
     longitude: string,
   }
+  type criticInterestType = {
+    nome: string,
+    tipoEventoCritico: {
+      rangeEvents: number,
+      tipo: string
+    },
+    latitude: number,
+    longitude: number
+  }
   var isRendered = false
-  const router = useRouter()
   const [interestPoints, setInterestPoints] = React.useState<interestType[]>([])
+  const [criticInterestPoints, setCriticInterestPoints] = React.useState<criticInterestType[]>([])
   const [map, setMap] = React.useState<Map | null>(null)
   const [isOpen, setIsOpen] = React.useState(false)
   const [newInterestCoordinates, setNewInterestCoordinates] = React.useState([0,0])
@@ -44,7 +53,17 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
             let latitude = 0
             let longitude = 0
 
-            fetch("http://192.168.1.107:3000/criticsEvents/")
+            fetch("http://localhost:4000/criticsEvents/RS", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjM4ODg0MDUsImV4cCI6MTcyMzk3NDgwNX0.OwkZ4NJ99ktt_z9rTJ-hIvb2cB2d4-Bv6sCLuYpomns`
+                },
+            }).then((response) => response.json()).then((data) => {
+                setCriticInterestPoints([...data])
+            })
+
+            
 
             navigator.geolocation.getCurrentPosition((position) => {
                 latitude = position.coords.latitude
@@ -165,6 +184,16 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
       id: 1
     }
 
+    fetch("http://localhost:4000/", {
+      method: "GET",
+      headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjM4ODg0MDUsImV4cCI6MTcyMzk3NDgwNX0.OwkZ4NJ99ktt_z9rTJ-hIvb2cB2d4-Bv6sCLuYpomns`
+      },
+    }).then((response) => response.json()).then((data) => {
+        setCriticInterestPoints([...data])
+    })
+
     setInterestPoints([...interestPoints, newInterest]);
     setIsOpen(false);
   }
@@ -209,8 +238,21 @@ export default function MapPage({isAdmin}: {isAdmin: boolean}) {
                 }
               })
             :
-            <p className='colorChange' style={{fontSize: "1rem", width:"290px"}}>{}</p>
-
+            <p className='colorChange' style={{fontSize: "1rem", width:"290px"}}>Carregando Pontos</p>
+          }
+          {
+            map != null && criticInterestPoints.length>0 ?
+              criticInterestPoints.map((criticInterestPoint, key) => {
+                const latitude = criticInterestPoint.latitude
+                const longitude = criticInterestPoint.longitude
+                if (latitude!=null && longitude!=null) {
+                  return(
+                    <MapItem id={key} map={map} coordinates={[Number(longitude), Number(latitude)]} title={criticInterestPoint.nome} type={"critical event"} multiplier={criticInterestPoint.tipoEventoCritico.rangeEvents} />                
+                )
+                }
+              })
+            :
+            <p className='colorChange' style={{fontSize: "1rem", width:"290px"}}>Carregando Pontos</p>
           }
           </div>
         </div>

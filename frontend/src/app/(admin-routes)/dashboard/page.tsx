@@ -20,6 +20,7 @@ import { Label } from "@radix-ui/react-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
+import MapPage from "@/components/map_components/map/Map";
 
 
 export default async function Page(){
@@ -227,6 +228,8 @@ export default async function Page(){
                     </div>
                 </div>
             </div>
+            <MapPage isAdmin={true}  />
+
         </>
     );
 }
