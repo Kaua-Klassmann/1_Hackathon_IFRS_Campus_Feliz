@@ -13,7 +13,6 @@ class EventoCriticoController {
   async store(req, res) {
     const schema = Yup.object().shape({
       nome: Yup.string().required(),
-      cep: Yup.string().required(),
       latitude: Yup.number().required(),
       longitude: Yup.number().required(),
       idTipoEventoCritico: Yup.number().min(1).required(),
@@ -23,7 +22,9 @@ class EventoCriticoController {
       return res.status(400).json({ error: "Erro de schema" });
     }
 
-    let { nome, cep, idTipoEventoCritico } = req.body;
+    let { nome, idTipoEventoCritico } = req.body;
+
+    let cep = req.ucep;
 
     cep = cep.replace(".", "").replace("-", "");
 

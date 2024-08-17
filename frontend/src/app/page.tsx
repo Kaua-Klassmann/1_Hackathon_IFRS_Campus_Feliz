@@ -47,7 +47,6 @@ export default function Home() {
             <Link href={"/login"}>Entrar</Link>
           </Button>
         </div>
-        <MapPage isAdmin={true}  />
       </div>
       <div className="w-screen flex flex-col items-center gap-3 p-14 pt-24">
         <p className="text-3xl font-bold">Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>

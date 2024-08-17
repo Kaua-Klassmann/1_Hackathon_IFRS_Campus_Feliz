@@ -103,6 +103,9 @@
     gap: 0.5rem;
     align-items: center;
     flex-direction: column;
+    position: absolute;
+    top: 25vh;
+    right: 5vw;
   }
 
   .interestShelter{
@@ -145,4 +148,8 @@
     display: flex;
     gap: 0.5rem;
     flex-direction: column;
+    height: 40vh;
+    width: 22vw;
+    padding: 10px;
+    overflow-y: auto;
   }

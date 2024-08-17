@@ -10,13 +10,11 @@ import Icon from "ol/style/Icon";
 import Style from "ol/style/Style";
 import React, { useEffect } from "react";
 import * as olProj from 'ol/proj'
-import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 export default function MapItem({id, map, coordinates, title, type, multiplier}
   : 
-  {id: number, map: Map, coordinates: number[], title: string, type: string, multiplier?: number}) {
-    const router = useRouter()
+  {id: number, map: Map, coordinates: number[], title: string, type: number, multiplier?: number}) {
 
     useEffect(() => {
       const shelterPoint = new Style({
@@ -68,19 +66,19 @@ export default function MapItem({id, map, coordinates, title, type, multiplier}
           map.addLayer(vectorLayer);
       };
 
-      const pointStyle = type === "shelter" ? shelterPoint : type === "control" ? controlPoint : type === "collect" ? collectPoint : criticalPoint;
+      const pointStyle = type === 2 ? shelterPoint : type === 3 ? controlPoint : type === 1 ? collectPoint : criticalPoint;
         const pointFeature = createPointFeature(olProj.fromLonLat(coordinates), pointStyle);
         addPointToMap({map, pointFeature: pointFeature});
 
           const overlayContent = `
             Título: ${title} (${id}) <br>
-            ${type === "shelter" ? "Ponto de Abrigo" : type === "control" ? "Ponto de Controle" : type === "collect" ? "Ponto de Coleta" : "Ponto Critico"}
+            ${type === 2 ? "Ponto de Abrigo" : type === 3 ? "Ponto de Controle" : type === 1 ? "Ponto de Coleta" : "Ponto Critico"}
           `;
-          const overlayClass = type === "shelter" ? "bg-[rgba(0,255,0,0.8)]" : type === "control" ? "bg-[rgba(255,255,0,1)]" : type === "collect" ? "bg-[rgba(0,0,255,0.8)]" : "bg-[rgba(255,0,0,0.8)]";
+          const overlayClass = type === 2 ? "bg-[rgba(0,255,0,0.8)]" : type === 3 ? "bg-[rgba(255,255,0,1)]" : type === 1 ? "bg-[rgba(0,0,255,0.8)]" : "bg-[rgba(255,0,0,0.8)]";
 
           const overlayContainer = document.createElement("div");
           overlayContainer.classList.add("popupOverlay");
-          type === "control" ? overlayContainer.classList.add("text-black") : null;
+          type === 3 ? overlayContainer.classList.add("text-black") : null;
           overlayContainer.innerHTML = overlayContent;
           overlayContainer.classList.add(overlayClass);
 
@@ -94,7 +92,7 @@ export default function MapItem({id, map, coordinates, title, type, multiplier}
 
           const spanType = document.getElementById(`${id}`);
           if (spanType) {
-            const itemTypeClass = type === "shelter" ? "interestShelter" : type === "control" ? "interestControl" : type === "collect" ? "interestCollect" : "interestCritical";
+            const itemTypeClass = type === 2 ? "interestShelter" : type === 3 ? "interestControl" : type === 1 ? "interestCollect" : "interestCritical";
             spanType.classList.remove("interestCollect", "interestShelter", "interestControl", "interestCritical");
             spanType.classList.add(itemTypeClass);
           }
@@ -121,7 +119,7 @@ export default function MapItem({id, map, coordinates, title, type, multiplier}
     return(
       <span onClick={mapItemFocus} className='flex flex-col font-bold listItem' style={{background: "rgba(131, 131, 131, 0.3)", borderRadius: "15px", padding:"10px", cursor: "pointer"}}>
           <p>Título: {title}</p>
-          <p id={id.toString()} className={`interestPoint`} >Tipo: {type == "shelter" ? "Ponto de Abrigo" : type == "control" ? "Ponto de Controle" : type == "collect" ? "Ponto de Coleta" : "Ponto Critico"}</p>
+          <p id={id.toString()} className={`interestPoint`} >Tipo: {type == 2 ? "Ponto de Abrigo" : type == 3 ? "Ponto de Controle" : type == 1 ? "Ponto de Coleta" : "Evento Critico"}</p>
       </span>
 )
 }
