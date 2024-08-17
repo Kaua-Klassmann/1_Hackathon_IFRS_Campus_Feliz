@@ -2,16 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest){
     const { searchParams } = new URL(req.url)
-    const token = searchParams.get("token")
+    const uuid = searchParams.get("token")
 
-    const response = await fetch(`http://localhost:4000/validateEmail`, {
+    const response = await fetch(`http://localhost:4000/validate/${uuid}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            token
-        })
+        }
     })
     
     // const data = await response.json();

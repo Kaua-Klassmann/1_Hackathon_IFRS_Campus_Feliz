@@ -1,18 +1,18 @@
 import { z } from "zod";
 
-export default async function createUser(username: string, email: string, password: string){
+export default async function createUser(nome: string, email: string, cep: string, senha: string, habilidades: number[]){
     const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
     const noSpecialCharRegex = /^[a-zA-Z0-9]*$/;
     const upperCaseRegex = /[A-Z]/;
     const numberRegex = /[0-9]/;
     
-    const newUserSchema = z.object({
-        username: z.string().min(5).max(12)
+    const usuarioSchema = z.object({
+        nome: z.string().min(4).max(20)
         .refine((val) => noSpecialCharRegex.test(val), {
             message: "Username must not contain any special characters",
         }),
         email: z.string().email(),
-        password: z.string().min(8).max(30)
+        senha: z.string().min(8).max(30)
         .refine((val) => specialCharRegex.test(val), {
             message: "Password must contain at least one special character",
         })
@@ -24,22 +24,24 @@ export default async function createUser(username: string, email: string, passwo
         })
     });
 
-    const newUser = {
-        username: username,
+    const novoUsuario = {
+        nome: nome,
         email: email,
-        password: password
+        cep: cep,
+        senha: senha,
+        habilidades: habilidades
     }
 
     try{
-        const response = await fetch(`http://localhost:4000/createUser`, {
+        const response = await fetch(`http://192.168.1.107:3000/user`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(newUserSchema.parse(newUser))
+            body: JSON.stringify(novoUsuario)
         })
 
-        const returned = response.json()
+        const returned = await response.json()
         return returned
 
     } catch(e){

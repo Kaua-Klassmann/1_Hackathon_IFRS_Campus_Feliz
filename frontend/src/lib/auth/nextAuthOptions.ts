@@ -11,7 +11,8 @@ export const nextAuthOptions: NextAuthOptions = {
             },
 
             async authorize(credentials, req) {
-                const response = await fetch(`http://localhost:4000/login`, {
+                console.log(credentials)
+                const response = await fetch(`http://192.168.1.107:3000/session`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -21,7 +22,7 @@ export const nextAuthOptions: NextAuthOptions = {
                         senha: credentials?.password
                     })
                 })
-
+                console.log(response)
                 const user = await response.json()
                 if(user && response.ok){
                     return user
