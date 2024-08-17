@@ -21,6 +21,8 @@ class UsuarioController {
       habilidades: Yup.array().of(Yup.number().min(1)).required(),
     });
 
+    console.log(req.body);
+
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: "Erro de schema" });
     }
