@@ -28,7 +28,7 @@ export default function recomendarPontoEvento(
       habilidadePontoEvento.idHabilidade,
       habilidades
     );
-    const score = calcularScore(habilidadesUsuario, vetorPontoEvento);
+    const score = calcularScore(vetorUsuario, vetorPontoEvento);
     return { pontoEvento: pontoEvento.idPontoEvento, score };
   });
 

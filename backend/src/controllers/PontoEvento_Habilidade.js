@@ -2,7 +2,7 @@ import Usuario_Habilidade from "../models/Usuario_Habilidade.js";
 import PontoEvento_Habilidade from "../models/PontoEvento_Habilidade.js";
 import Habilidade from "../models/Habilidade.js";
 
-import recomendarPontoEvento from "../machines/recommendPontoEvent";
+import recomendarPontoEvento from "../machines/recommendPontoEvent.js";
 
 class PontoEvento_HabilidadeController {
   async recommend(req, res) {

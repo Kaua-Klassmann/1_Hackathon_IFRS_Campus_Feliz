@@ -7,6 +7,7 @@ import HabilidadeController from "../controllers/HabilidadeController.js";
 import EventoCriticoController from "../controllers/EventoCriticoController.js";
 import TipoEventoCriticoController from "../controllers/TipoEventoCriticoController.js";
 import PontoEventoController from "../controllers/PontoEventoController.js";
+import PontoEvento_HabilidadeController from "../controllers/PontoEvento_Habilidade.js";
 
 const routes = new Router();
 
@@ -23,5 +24,7 @@ routes.get("/pointsEvents", PontoEventoController.index);
 routes.post("/pointEvent", PontoEventoController.store);
 routes.get("/criticsEvents/:uf", EventoCriticoController.index);
 routes.post("/criticEvent", EventoCriticoController.store);
+
+routes.get("/recommendPointEvent", PontoEvento_HabilidadeController.recommend);
 
 export default routes;
