@@ -25,6 +25,16 @@ class EventoCritico extends Model {
           type: DataTypes.STRING,
           allowNull: false,
         },
+
+        latitude: {
+          type: DataTypes.DOUBLE,
+          allowNull: false,
+        },
+
+        longitude: {
+          type: DataTypes.DOUBLE,
+          allowNull: false,
+        },
       },
       {
         sequelize,
@@ -36,6 +46,7 @@ class EventoCritico extends Model {
   static associate(models) {
     this.belongsTo(models.TipoEventoCritico, {
       foreignKey: "idTipoEventoCritico",
+      as: "tipoEventoCritico",
     });
   }
 }

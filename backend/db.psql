@@ -69,7 +69,9 @@ CREATE TABLE "EventoCritico" (
   "nome" VARCHAR NOT NULL,
   "cep" VARCHAR NOT NULL,
   "idTipoEventoCritico" INTEGER NOT NULL REFERENCES "TipoEventoCritico"("id"),
-  "estado" VARCHAR NOT NULL
+  "estado" VARCHAR NOT NULL,
+  "longitude" DOUBLE PRECISION NOT NULL,
+  "latitude" DOUBLE PRECISION NOT NULL
   "createdAt" DATE NOT NULL DEFAULT CURRENT_DATE,
   "updatedAt" DATE NOT NULL DEFAULT CURRENT_DATE
 );

@@ -1,6 +1,5 @@
 import Yup from "yup";
 import nodemailer from "nodemailer";
-import { v4 as uuidv4 } from "uuid";
 
 import axios from "axios";
 
@@ -8,12 +7,15 @@ import { configDotenv } from "dotenv";
 configDotenv();
 
 import EventoCritico from "../models/EventoCritico.js";
+import TipoEventoCritico from "../models/TipoEventoCritico.js";
 
 class EventoCriticoController {
   async store(req, res) {
     const schema = Yup.object().shape({
       nome: Yup.string().required(),
       cep: Yup.string().required(),
+      latitude: Yup.number().required(),
+      longitude: Yup.number().required(),
       idTipoEventoCritico: Yup.number().min(1).required(),
     });
 
@@ -25,6 +27,8 @@ class EventoCriticoController {
 
     cep = cep.replace(".", "").replace("-", "");
 
+    console.log(cep);
+
     const data = await axios
       .get(`https://viacep.com.br/ws/${cep}/json/`)
       .then((response) => response.data);
@@ -35,6 +39,8 @@ class EventoCriticoController {
       nome,
       cep,
       idTipoEventoCritico,
+      latitude: req.body.latitude,
+      longitude: req.body.longitude,
       estado: data.uf,
     });
 
@@ -77,6 +83,14 @@ class EventoCriticoController {
       where: {
         estado: req.params.uf,
       },
+      attributes: ["nome"],
+      include: [
+        {
+          model: TipoEventoCritico,
+          as: "tipoEventoCritico",
+          attributes: ["tipo", "rangeEvento"],
+        },
+      ],
     });
 
     if (!eventos) {
