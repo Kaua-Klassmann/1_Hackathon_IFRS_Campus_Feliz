@@ -26,19 +26,19 @@ export default function MapItem({id, map, coordinates, title, type}
         })
       });
 
-      const problemPoint = new Style({
-        image: new Icon({
-            scale: 0.1,
-            anchor: [0.1, 0.1], // Anchor point for the icon (offset from center)
-            src: 'https://cdn-icons-png.flaticon.com/128/14035/14035711.png' // Path to your custom marker image (optional)
-        })
-      });
-
       const collectPoint = new Style({
         image: new Icon({
             scale: 0.1,
             anchor: [0.1, 0.1], // Anchor point for the icon (offset from center)
             src: 'https://cdn-icons-png.flaticon.com/128/6162/6162025.png' // Path to your custom marker image (optional)
+        })
+      });
+
+      const controlPoint = new Style({
+        image: new Icon({
+            scale: 0.1,
+            anchor: [0.1, 0.1], // Anchor point for the icon (offset from center)
+            src: 'https://cdn-icons-png.flaticon.com/128/16396/16396073.png' // Path to your custom marker image (optional)
         })
       });
 
@@ -57,15 +57,15 @@ export default function MapItem({id, map, coordinates, title, type}
           map.addLayer(vectorLayer);
       };
 
-      const pointStyle = type === "shelter" ? shelterPoint : type === "collect" ? collectPoint : problemPoint;
+      const pointStyle = type === "shelter" ? shelterPoint : collectPoint;
         const pointFeature = createPointFeature(olProj.fromLonLat(coordinates), pointStyle);
         addPointToMap({map, pointFeature: pointFeature});
 
           const overlayContent = `
             Título: ${title} (${id}) <br>
-            ${type === "shelter" ? "Ponto de Abrigo" : type === "collect" ? "Ponto de Coleta" : "Ponto de Problema"}
+            ${type === "shelter" ? "Ponto de Abrigo" : type === "control" ? "Ponto de Controle" : "Ponto de Coleta"}
           `;
-          const overlayClass = type === "shelter" ? "rgba(0, 255, 0, 0.8)" : type === "collect" ? "rgba(, 0, 255, 0.8)" : "rgba(255, 0, 0, 0.8)";
+          const overlayClass = type === "shelter" ? "bg-[rgba(0,255,0,0.8)]" : type === "control" ? "bg-[rgba(255,255,0,0.8)]" : "bg-[rgba(0,0,255,0.8)]";
 
           const overlayContainer = document.createElement("div");
           overlayContainer.classList.add("popupOverlay");
@@ -80,12 +80,22 @@ export default function MapItem({id, map, coordinates, title, type}
             stopEvent: true,
           });
 
-          const spanIP = document.getElementById(`${id}`);
-          if (spanIP) {
-            const itemIPClass = type === "shelter" ? "interestShelter" : type === "collect" ? "interestCollect" : "interestProblem";
-            spanIP.classList.remove("interestCollect", "interestShelter", "interestProblem");
-            spanIP.classList.add(itemIPClass);
+          const spanType = document.getElementById(`${id}`);
+          if (spanType) {
+            const itemTypeClass = type === "shelter" ? "interestShelter" : type === "control" ? "interestControl" : "interestCollect";
+            spanType.classList.remove("interestCollect", "interestShelter", "interestControl");
+            spanType.classList.add(itemTypeClass);
           }
+
+          map.on('pointermove', (evt) => {
+            const hoveredFeature = map.forEachFeatureAtPixel(evt.pixel, (feature) => feature);
+          
+            if (hoveredFeature === pointFeature) {
+              overlay.setPosition(olProj.fromLonLat(coordinates))
+            } else {
+              overlay.setPosition(undefined)
+            }
+          });
 
           map.addOverlay(overlay);
     }, []);
@@ -99,7 +109,7 @@ export default function MapItem({id, map, coordinates, title, type}
     return(
       <span onClick={mapItemFocus} className='flex flex-col font-bold listItem' style={{background: "rgba(131, 131, 131, 0.3)", borderRadius: "15px", padding:"10px", cursor: "pointer"}}>
           <p>Título: {title}</p>
-          <p id={id.toString()} className={`itemIP`} >Tipo: </p>
+          <p id={id.toString()} className={`interestPoint`} >Tipo: {type == "shelter" ? "Ponto de Abrigo" : type == "control" ? "Ponto de Controle" : "Ponto de Coleta"}</p>
       </span>
 )
 }

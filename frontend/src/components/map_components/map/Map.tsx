@@ -9,7 +9,14 @@ import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MapItem from '../MapItem';
-export default function MapPage() {
+import { MapBrowserEvent } from 'ol';
+import { Dialog, DialogClose, DialogContent, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { XIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+export default function MapPage({isAdmin}: {isAdmin: boolean}) {
   type interestType = {
     title: string,
     type: string,
@@ -21,6 +28,8 @@ export default function MapPage() {
   const router = useRouter()
   const [interestPoints, setInterestPoints] = React.useState<interestType[]>([])
   const [map, setMap] = React.useState<Map | null>(null)
+  const [isOpen, setIsOpen] = React.useState(false)
+  const [newInterestCoordinates, setNewInterestCoordinates] = React.useState([0,0])
 
   useEffect(() => {
     /**
@@ -90,29 +99,43 @@ export default function MapPage() {
     });
     setFilterStatus(filterStatus === currentFilter ? "" : currentFilter);
   };
-
   useEffect(() => {
     const listItems = document.querySelectorAll(".listItem");
-    listItems.forEach((listItem) => {
-      const text = listItem.textContent?.toLowerCase() || "";
-      const isActive = listItem.children[1].classList.contains("interestShelter");
-      const isInactive = listItem.children[1].classList.contains("interestProblem");
-      const isMaintance = listItem.children[1].classList.contains("interestCollect");
-      const isMatchSearch = text.includes(searchText);
-      const isMatchFilter =
-        (filterStatus === "") ||
-        (filterStatus === "Abrigo".toLowerCase() && isActive) ||
-        (filterStatus === "Problema".toLowerCase() && isInactive) ||
-        (filterStatus === "Coleta".toLowerCase() && isMaintance);
-      if (isMatchSearch && isMatchFilter) {
-        listItem.classList.remove("hiddenItem");
-        listItem.classList.add("flex");
-      } else {
-        listItem.classList.remove("flex");
-        listItem.classList.add("hiddenItem");
-      }
+
+    const filteredListItems = Array.from(listItems).filter((item) => {
+      const itemText = item.textContent?.toLowerCase() || "";
+      const searchCondition = itemText.includes(searchText);
+      const filterCondition = filterStatus === "" || itemText.includes(filterStatus);
+      
+
+      return filterCondition && searchCondition;
     });
-  }, [searchText, filterStatus]);
+
+    filteredListItems.forEach((item) => {
+      item.classList.remove("hidden");
+    });
+
+    const hiddenListItems = Array.from(listItems).filter((item) => !filteredListItems.includes(item));
+
+    hiddenListItems.forEach((item) => {
+      item.classList.add("hidden");
+    });
+  }, [filterStatus, searchText]);
+
+
+  const getClickCoordinate = (event: MapBrowserEvent<MouseEvent>) => {
+    event.preventDefault();
+    const coordinate = event.coordinate;
+    const lonlat = olProj.transform(coordinate, "EPSG:3857", "EPSG:4326");
+    const lon = lonlat[0];
+    const lat = lonlat[1];
+    console.log(`Coordinate: ${lon}, ${lat}`);
+    setNewInterestCoordinates([lon, lat]);
+    setIsOpen(true)
+  };
+
+  isAdmin ? map?.on("singleclick", getClickCoordinate) : null;
+
 
   return (
       <section id='mapSection'>
@@ -128,12 +151,12 @@ export default function MapPage() {
         
 
         <div id='interestList'>
-          <h3 className='text-2xl'>{}</h3>
+          <h3 className='text-2xl'>Lista de Interesses</h3>
           <div className='searchDiv'>
-            <input onChange={handleSearch} type="search" id="search-input" placeholder={"Inserir nome"} />
+            <Input onChange={handleSearch} type="search" id="search-input" placeholder={"Inserir nome"} />
             <div id='filterBtns'>
               <button type='button' style={{background: "#00ba00"}} onClick={handleFilterClick}>Abrigo</button>
-              <button type='button' style={{background: "red"}} onClick={handleFilterClick}>Problema</button>
+              <button type='button' style={{background: "rgba(255,255,0,0.8)"}} onClick={handleFilterClick}>Controle</button>
               <button type='button' style={{background: "blue"}} onClick={handleFilterClick}>Coleta</button>
             </div>
           </div>
@@ -153,8 +176,53 @@ export default function MapPage() {
             <p className='colorChange' style={{fontSize: "1rem", width:"290px"}}>{}</p>
 
           }
+          {
+            map != null ?
+          <MapItem id={1} map={map!} coordinates={[52.123, 20.123]} title={"Teste"} type={"shelter"}/>
+          :
+          null
+          }
           </div>
         </div>
+
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogOverlay className="fixed inset-0 bg-black bg-opacity-30" />
+          <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 max-w-md rounded-lg bg-white p-10 shadow-lg">
+            <DialogClose asChild>
+              <Button className="absolute top-0 right-0 p-2 text-gray-400 hover:text-gray-900">
+                <XIcon className="h-5 w-5" />
+              </Button>
+            </DialogClose>
+            <DialogTitle className="text-2xl font-bold text-black">Adicione um ponto de interesse</DialogTitle>
+            <Label className="block mt-4">
+              <span className="block text-sm font-medium text-gray-700">Título</span>
+              <Input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+            </Label>
+            <Label className="block mt-4">
+              <span className="block text-sm font-medium text-gray-700">Latitude</span>
+              <Input type="number" defaultValue={newInterestCoordinates[1]} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+            </Label>
+            <Label className="block mt-4">
+              <span className="block text-sm font-medium text-gray-700">Longitude</span>
+              <Input type="number" defaultValue={newInterestCoordinates[0]} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+            </Label>
+            <Label className="block mt-4">
+              <span className="block text-sm font-medium text-gray-700">Tipo</span>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Selecione">Selecione</SelectItem>
+                  <SelectItem value="Abrigo">Abrigo</SelectItem>
+                  <SelectItem value="Coleta">Coleta</SelectItem>
+                </SelectContent>
+              </Select>
+            </Label>
+            <Button type="submit" className="mt-4 w-full bg-indigo-600 px-4 py-2 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Adicionar</Button>
+        </DialogContent>
+        </Dialog>
+
         <ToastContainer />
       </section>
   )

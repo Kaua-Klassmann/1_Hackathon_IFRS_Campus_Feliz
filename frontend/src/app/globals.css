@@ -74,3 +74,33 @@
       @apply bg-background text-foreground;
     }
   }
+
+  .hiddenItem{
+    display: none,
+  }
+
+  .popupOverlay{
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+
+  #filterBtns{
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  #filterBtns button{
+    padding: 0.25rem;
+    font-weight: bold;
+    border-radius: 0.3rem;
+  }
+
+  #interestList{
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-direction: column;
+  }

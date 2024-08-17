@@ -1,3 +1,4 @@
+import MapPage from "@/components/map_components/map/Map";
 import ThemeButton from "@/components/theme-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -16,6 +17,7 @@ export default function Home() {
             <Link href={"/login"}>Login</Link>
           </Button>
         </div>
+        <MapPage isAdmin={false}  />
       </div>
     </>
   );
