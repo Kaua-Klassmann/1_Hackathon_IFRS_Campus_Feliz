@@ -1,6 +1,7 @@
 import Yup from "yup";
 
 import PontoEvento from "../models/PontoEvento.js";
+import PontoEvento_Habilidade from "../models/PontoEvento_Habilidade.js";
 
 class PontoEventoController {
   async store(req, res) {
@@ -10,6 +11,7 @@ class PontoEventoController {
       idEventoCritico: Yup.string().required(),
       latitude: Yup.number().required(),
       longitude: Yup.number().required(),
+      habilidades: Yup.array().of(Yup.number().min(1)).required(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -19,12 +21,19 @@ class PontoEventoController {
     const { nome, idTipoPontoEvento, idEventoCritico, latitude, longitude } =
       req.body;
 
-    await PontoEvento.create({
+    const { id } = await PontoEvento.create({
       nome,
       idTipoPontoEvento,
       idEventoCritico,
       latitude,
       longitude,
+    });
+
+    req.body.habilidades.forEach(async (habilidade) => {
+      await PontoEvento_Habilidade.create({
+        idPontoEvento: id,
+        idHabilidade: habilidade,
+      });
     });
 
     return res.send();

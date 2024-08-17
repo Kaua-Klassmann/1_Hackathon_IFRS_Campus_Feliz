@@ -8,10 +8,13 @@ function calcularScore(vetorA, vetorB) {
   const tensorA = tf.tensor1d(vetorA);
   const tensorB = tf.tensor1d(vetorB);
 
-  const dotProduct = tf.dot(tensorA, tensorB).dataSync();
+  const dotProduct = tf.dot(tensorA, tensorB).dataSync()[0];
+  const magnitudeA = tf.norm(tensorA).dataSync()[0];
+  const magnitudeB = tf.norm(tensorB).dataSync()[0];
 
-  const magnitudeA = tf.norm(tensorA).dataSync();
-  const magnitudeB = tf.norm(tensorB).dataSync();
+  if (magnitudeA === 0 || magnitudeB === 0) {
+    return 0;
+  }
 
   return dotProduct / (magnitudeA * magnitudeB);
 }
@@ -25,14 +28,15 @@ export default function recomendarPontoEvento(
 
   const scores = habilidadesPontoEventos.map((habilidadePontoEvento) => {
     const vetorPontoEvento = vetorizar(
-      habilidadePontoEvento.idHabilidade,
+      habilidadePontoEvento.idHabilidades,
       habilidades
     );
     const score = calcularScore(vetorUsuario, vetorPontoEvento);
-    return { pontoEvento: pontoEvento.idPontoEvento, score };
+
+    return { pontoEvento: habilidadePontoEvento.idPontoEvento, score };
   });
 
-  const recomendacoes = scores.sort((a, b) => b.score - a.score);
+  const recomendacoes = scores.sort((a, b) => b.score - a.score).slice(0, 3);
 
   return recomendacoes;
 }
